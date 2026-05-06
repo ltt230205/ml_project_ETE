@@ -1,0 +1,16 @@
+venv/
+env/
+.venv/
+bin/
+lib/
+
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+*.xlsx
+*.pkl
+*.h5
+*.joblib
+models/
