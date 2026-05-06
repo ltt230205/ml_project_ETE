@@ -1,0 +1,35 @@
+# raw_data:
+#   path: "data/raw/ecommerce_customer_churn_dataset.csv"
+
+# processed_data:
+#   path: "data/processed/cleaned_data.csv"
+
+# preprocess:
+#   test_size: 0.2  
+#   random_state: 42
+#   target_column: "Churned"
+#   cv_folds: 5
+#   sampling_methods : ["none", "smote"]
+
+# mlflow:
+#   experiment_name: "Churn_CV_Comparison"
+
+raw_data:
+  path: "data/raw/ecommerce_customer_churn_dataset.csv"
+
+processed_data:
+  train_path: "data/processed/train.csv"
+  test_path: "data/processed/test.csv"
+
+preprocess:
+  target_column: "Churned"
+  cv_folds: 5
+  # Thêm lựa chọn so sánh SMOTE
+  sampling_methods: ["none", "smote"]
+
+mlflow:
+  # Cấu hình để code ngoài venv trỏ vào Docker
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "Churn_Comparison_v2"
+  # Cấu hình MinIO (S3)
+  s3_endpoint: "http://localhost:9000"

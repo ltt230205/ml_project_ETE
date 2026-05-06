@@ -1,0 +1,89 @@
+# stages:
+#   preprocess:
+#     cmd: python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     cmd: python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.target_column
+
+# stages:
+#   preprocess:
+#     cmd: ./venv/bin/python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     # Tương tự cho bước train
+#     cmd: ./venv/bin/python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - preprocess.target_column
+
+# stages:
+#   preprocess:
+#     # Trỏ thẳng vào venv để đảm bảo có pandas
+#     cmd: ./venv/bin/python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     # Chạy script huấn luyện so sánh 40 model (10 models x 2 scalers x 2 sampling)
+#     cmd: ./venv/bin/python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - preprocess.target_column
+#     # Không cần outs cho model vì đã lưu trực tiếp lên MinIO qua MLflow
+
+
+stages:
+  preprocess:
+    cmd: ./venv/bin/python src/preprocess.py
+    deps:
+      - src/preprocess.py
+      - data/raw/ecommerce_customer_churn_dataset.csv
+    params:
+      - raw_data.path
+      - processed_data.train_path
+      - processed_data.test_path
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: ./venv/bin/python src/train_v2.py
+    deps:
+      - src/train_v2.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    params:
+      - processed_data.train_path
+      - processed_data.test_path
+      - preprocess.target_column
+      - preprocess.cv_folds
+      - preprocess.sampling_methods
+      - mlflow.experiment_name
+    # Ở đây chúng ta không để 'outs' cho model vì bạn đã lưu trực tiếp lên MinIO qua MLflow
