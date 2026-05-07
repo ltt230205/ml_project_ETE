@@ -1,0 +1,70 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: ./venv/bin/python src/preprocess_v2.py
+    deps:
+    - path: data/raw/ecommerce_customer_churn_dataset.csv
+      hash: md5
+      md5: cf95c05dafbf6536d9f5f7739478af19
+      size: 6112281
+    - path: src/preprocess_v2.py
+      hash: md5
+      md5: b37085ce4a166eb152808d6d4c72e778
+      size: 2407
+    params:
+      params.yaml:
+        processed_data.test_path: data/processed/test_v2.csv
+        processed_data.train_path: data/processed/train_v2.csv
+        raw_data.path: data/raw/ecommerce_customer_churn_dataset.csv
+    outs:
+    - path: data/processed/test_v2.csv
+      hash: md5
+      md5: 4b3a170ec86e907fcb4aef2292df4963
+      size: 1240895
+    - path: data/processed/train_v2.csv
+      hash: md5
+      md5: f64c2fe80b3486ffd3da1b3056fcc662
+      size: 4965326
+  train_compare:
+    cmd: ./venv/bin/python src/train.py
+    deps:
+    - path: data/processed/cleaned_data.csv
+      hash: md5
+      md5: 06ec1f29221edef9824213077dedec8e
+      size: 5494047
+    - path: src/train.py
+      hash: md5
+      md5: c0ad648390bd62e45e99138f1ed27457
+      size: 4329
+    params:
+      params.yaml:
+        preprocess.cv_folds: 5
+        preprocess.sampling_methods:
+        - none
+        - smote
+        preprocess.target_column: Churned
+  train:
+    cmd: ./venv/bin/python src/train_v2.py
+    deps:
+    - path: data/processed/test_v2.csv
+      hash: md5
+      md5: 4b3a170ec86e907fcb4aef2292df4963
+      size: 1240895
+    - path: data/processed/train_v2.csv
+      hash: md5
+      md5: f64c2fe80b3486ffd3da1b3056fcc662
+      size: 4965326
+    - path: src/train_v2.py
+      hash: md5
+      md5: 64e906cce7fef2be9234f6e5833e069e
+      size: 10235
+    params:
+      params.yaml:
+        mlflow.experiment_name: Churned_Comparison_v2
+        preprocess.cv_folds: 5
+        preprocess.sampling_methods:
+        - none
+        - smote
+        preprocess.target_column: Churned
+        processed_data.test_path: data/processed/test_v2.csv
+        processed_data.train_path: data/processed/train_v2.csv

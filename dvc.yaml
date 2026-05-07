@@ -61,24 +61,24 @@
 
 stages:
   preprocess:
-    cmd: ./venv/bin/python src/preprocess.py
+    cmd: ./venv/bin/python src/preprocess_v2.py
     deps:
-      - src/preprocess.py
+      - src/preprocess_v2.py
       - data/raw/ecommerce_customer_churn_dataset.csv
     params:
       - raw_data.path
       - processed_data.train_path
       - processed_data.test_path
     outs:
-      - data/processed/train.csv
-      - data/processed/test.csv
+      - data/processed/train_v2.csv
+      - data/processed/test_v2.csv
 
   train:
     cmd: ./venv/bin/python src/train_v2.py
     deps:
       - src/train_v2.py
-      - data/processed/train.csv
-      - data/processed/test.csv
+      - data/processed/train_v2.csv
+      - data/processed/test_v2.csv
     params:
       - processed_data.train_path
       - processed_data.test_path

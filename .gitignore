@@ -14,6 +14,3 @@ __pycache__/
 *.h5
 *.joblib
 models/
-
-*.lock
-*.db

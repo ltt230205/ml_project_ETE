@@ -18,8 +18,8 @@ raw_data:
   path: "data/raw/ecommerce_customer_churn_dataset.csv"
 
 processed_data:
-  train_path: "data/processed/train.csv"
-  test_path: "data/processed/test.csv"
+  train_path: "data/processed/train_v2.csv"
+  test_path: "data/processed/test_v2.csv"
 
 preprocess:
   target_column: "Churned"
@@ -30,6 +30,6 @@ preprocess:
 mlflow:
   # Cấu hình để code ngoài venv trỏ vào Docker
   tracking_uri: "http://localhost:5000"
-  experiment_name: "Churn_Comparison_v2"
+  experiment_name: "Churned_Comparison_v2"
   # Cấu hình MinIO (S3)
   s3_endpoint: "http://localhost:9000"
