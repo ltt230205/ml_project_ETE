@@ -60,4 +60,4 @@ try:
     print("-" * 30)
 
 except Exception as e:
-    print(f"❌ Lỗi khi dự đoán: {e}"
+    print(f"❌ Lỗi khi dự đoán: {e}")
