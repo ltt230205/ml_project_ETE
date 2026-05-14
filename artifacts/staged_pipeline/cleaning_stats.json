@@ -1,0 +1,206 @@
+{
+  "numeric_cols": [
+    "Age",
+    "Membership_Years",
+    "Login_Frequency",
+    "Session_Duration_Avg",
+    "Pages_Per_Session",
+    "Cart_Abandonment_Rate",
+    "Wishlist_Items",
+    "Total_Purchases",
+    "Average_Order_Value",
+    "Days_Since_Last_Purchase",
+    "Discount_Usage_Rate",
+    "Returns_Rate",
+    "Email_Open_Rate",
+    "Customer_Service_Calls",
+    "Product_Reviews_Written",
+    "Social_Media_Engagement_Score",
+    "Mobile_App_Usage",
+    "Payment_Method_Diversity",
+    "Lifetime_Value",
+    "Credit_Balance"
+  ],
+  "categorical_cols": [
+    "Gender",
+    "Country",
+    "City",
+    "Signup_Quarter"
+  ],
+  "numeric": {
+    "Age": {
+      "median": 38.0,
+      "q1": 29.0,
+      "q3": 46.0,
+      "iqr": 17.0,
+      "lower": 3.5,
+      "upper": 71.5
+    },
+    "Membership_Years": {
+      "median": 2.5,
+      "q1": 1.4,
+      "q3": 4.0,
+      "iqr": 2.6,
+      "lower": -2.5000000000000004,
+      "upper": 7.9
+    },
+    "Login_Frequency": {
+      "median": 11.0,
+      "q1": 6.0,
+      "q3": 17.0,
+      "iqr": 11.0,
+      "lower": -10.5,
+      "upper": 33.5
+    },
+    "Session_Duration_Avg": {
+      "median": 26.8,
+      "q1": 19.7,
+      "q3": 34.9,
+      "iqr": 15.2,
+      "lower": -3.099999999999998,
+      "upper": 57.699999999999996
+    },
+    "Pages_Per_Session": {
+      "median": 8.4,
+      "q1": 6.0,
+      "q3": 11.2,
+      "iqr": 5.199999999999999,
+      "lower": -1.799999999999999,
+      "upper": 19.0
+    },
+    "Cart_Abandonment_Rate": {
+      "median": 58.1,
+      "q1": 46.5,
+      "q3": 68.7,
+      "iqr": 22.200000000000003,
+      "lower": 13.199999999999996,
+      "upper": 102.0
+    },
+    "Wishlist_Items": {
+      "median": 4.0,
+      "q1": 2.0,
+      "q3": 6.0,
+      "iqr": 4.0,
+      "lower": -4.0,
+      "upper": 12.0
+    },
+    "Total_Purchases": {
+      "median": 12.0,
+      "q1": 8.0,
+      "q3": 17.0,
+      "iqr": 9.0,
+      "lower": -5.5,
+      "upper": 30.5
+    },
+    "Average_Order_Value": {
+      "median": 113.05,
+      "q1": 86.9975,
+      "q3": 144.4625,
+      "iqr": 57.465,
+      "lower": 0.7999999999999972,
+      "upper": 230.66000000000003
+    },
+    "Days_Since_Last_Purchase": {
+      "median": 21.0,
+      "q1": 9.0,
+      "q3": 41.0,
+      "iqr": 32.0,
+      "lower": -39.0,
+      "upper": 89.0
+    },
+    "Discount_Usage_Rate": {
+      "median": 40.2,
+      "q1": 25.3,
+      "q3": 57.0,
+      "iqr": 31.7,
+      "lower": -22.249999999999996,
+      "upper": 104.55
+    },
+    "Returns_Rate": {
+      "median": 5.4,
+      "q1": 2.9,
+      "q3": 9.1,
+      "iqr": 6.199999999999999,
+      "lower": -6.399999999999999,
+      "upper": 18.4
+    },
+    "Email_Open_Rate": {
+      "median": 19.7,
+      "q1": 9.9,
+      "q3": 30.4,
+      "iqr": 20.5,
+      "lower": -20.85,
+      "upper": 61.15
+    },
+    "Customer_Service_Calls": {
+      "median": 5.0,
+      "q1": 4.0,
+      "q3": 7.0,
+      "iqr": 3.0,
+      "lower": -0.5,
+      "upper": 11.5
+    },
+    "Product_Reviews_Written": {
+      "median": 2.0,
+      "q1": 1.0,
+      "q3": 4.0,
+      "iqr": 3.0,
+      "lower": -3.5,
+      "upper": 8.5
+    },
+    "Social_Media_Engagement_Score": {
+      "median": 27.6,
+      "q1": 13.2,
+      "q3": 43.2,
+      "iqr": 30.000000000000004,
+      "lower": -31.800000000000008,
+      "upper": 88.20000000000002
+    },
+    "Mobile_App_Usage": {
+      "median": 18.6,
+      "q1": 12.5,
+      "q3": 25.5,
+      "iqr": 13.0,
+      "lower": -7.0,
+      "upper": 45.0
+    },
+    "Payment_Method_Diversity": {
+      "median": 2.0,
+      "q1": 2.0,
+      "q3": 3.0,
+      "iqr": 1.0,
+      "lower": 0.5,
+      "upper": 4.5
+    },
+    "Lifetime_Value": {
+      "median": 1243.12,
+      "q1": 787.7,
+      "q3": 1876.3274999999999,
+      "iqr": 1088.6274999999998,
+      "lower": -845.2412499999998,
+      "upper": 3509.2687499999997
+    },
+    "Credit_Balance": {
+      "median": 1898.0,
+      "q1": 1049.0,
+      "q3": 2797.0,
+      "iqr": 1748.0,
+      "lower": -1573.0,
+      "upper": 5419.0
+    }
+  },
+  "categorical": {
+    "Gender": {
+      "fill_value": "Female"
+    },
+    "Country": {
+      "fill_value": "USA"
+    },
+    "City": {
+      "fill_value": "Houston"
+    },
+    "Signup_Quarter": {
+      "fill_value": "Q3"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "decision_threshold": 0.35,
+  "threshold_selection_metric": "fixed",
+  "min_precision": null,
+  "threshold_metrics_oof": {
+    "threshold_metric": "fixed",
+    "threshold_score": 0.8439603790575019,
+    "threshold_accuracy": 0.909025,
+    "threshold_precision_churned": 0.8515922464520596,
+    "threshold_recall_churned": 0.8364640883977901,
+    "threshold_f1_churned": 0.8439603790575019
+  },
+  "best_candidate_run_id": "d4963fe49a0b4c738365450dad6f2da2",
+  "best_candidate_run_name": "Gradient_Boosting_MinMax_SMOTE_none",
+  "test_metrics": {
+    "test_accuracy": 0.9191,
+    "test_f1_churned": 0.8483030189386837,
+    "test_f1_stayed": 0.9448421626781209,
+    "test_recall_churned": 0.8424581005586592,
+    "test_precision_churned": 0.8542296072507553
+  }
+}

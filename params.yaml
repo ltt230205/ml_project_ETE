@@ -29,7 +29,7 @@ preprocess:
 
 mlflow:
   # Cấu hình để code ngoài venv trỏ vào Docker
-  tracking_uri: "http://localhost:5000"
-  experiment_name: "Churned_Comparison_v2"
+  tracking_uri: "http://mlflow:5000"
+  experiment_name: "Churned_Comparison_v3"
   # Cấu hình MinIO (S3)
-  s3_endpoint: "http://localhost:9000"
+  s3_endpoint: "http://minio:9000"

@@ -3,3 +3,4 @@ outs:
   size: 6112281
   hash: md5
   path: ecommerce_customer_churn_dataset.csv
+  isexec: true

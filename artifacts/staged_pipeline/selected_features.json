@@ -1,0 +1,124 @@
+{
+  "method": "SelectKBest(f_classif) on label-encoded categorical features",
+  "k": 20,
+  "selected_features": [
+    "Age",
+    "Login_Frequency",
+    "Session_Duration_Avg",
+    "Pages_Per_Session",
+    "Cart_Abandonment_Rate",
+    "Wishlist_Items",
+    "Total_Purchases",
+    "Average_Order_Value",
+    "Days_Since_Last_Purchase",
+    "Discount_Usage_Rate",
+    "Returns_Rate",
+    "Email_Open_Rate",
+    "Customer_Service_Calls",
+    "Product_Reviews_Written",
+    "Social_Media_Engagement_Score",
+    "Mobile_App_Usage",
+    "Payment_Method_Diversity",
+    "Lifetime_Value",
+    "Credit_Balance",
+    "Signup_Quarter"
+  ],
+  "feature_scores": [
+    {
+      "feature": "Customer_Service_Calls",
+      "score": 3604.859383885878
+    },
+    {
+      "feature": "Cart_Abandonment_Rate",
+      "score": 3359.5458479531835
+    },
+    {
+      "feature": "Pages_Per_Session",
+      "score": 2106.247290132988
+    },
+    {
+      "feature": "Session_Duration_Avg",
+      "score": 2000.4167679564437
+    },
+    {
+      "feature": "Email_Open_Rate",
+      "score": 1939.7007259849918
+    },
+    {
+      "feature": "Mobile_App_Usage",
+      "score": 1859.4278597106559
+    },
+    {
+      "feature": "Login_Frequency",
+      "score": 1733.4024072471211
+    },
+    {
+      "feature": "Wishlist_Items",
+      "score": 1544.7708125368008
+    },
+    {
+      "feature": "Product_Reviews_Written",
+      "score": 1299.1447640045367
+    },
+    {
+      "feature": "Social_Media_Engagement_Score",
+      "score": 1291.3940730840156
+    },
+    {
+      "feature": "Total_Purchases",
+      "score": 1251.76550499887
+    },
+    {
+      "feature": "Average_Order_Value",
+      "score": 1099.4805578898304
+    },
+    {
+      "feature": "Credit_Balance",
+      "score": 889.13948281867
+    },
+    {
+      "feature": "Days_Since_Last_Purchase",
+      "score": 812.8814030904493
+    },
+    {
+      "feature": "Age",
+      "score": 458.3530370276959
+    },
+    {
+      "feature": "Discount_Usage_Rate",
+      "score": 220.44323312287884
+    },
+    {
+      "feature": "Returns_Rate",
+      "score": 199.65698172438246
+    },
+    {
+      "feature": "Lifetime_Value",
+      "score": 4.56713589302353
+    },
+    {
+      "feature": "Signup_Quarter",
+      "score": 3.7760759805936903
+    },
+    {
+      "feature": "Payment_Method_Diversity",
+      "score": 2.25648763217461
+    },
+    {
+      "feature": "Membership_Years",
+      "score": 1.2365890892796756
+    },
+    {
+      "feature": "City",
+      "score": 0.47160813955999104
+    },
+    {
+      "feature": "Country",
+      "score": 0.13874722938058348
+    },
+    {
+      "feature": "Gender",
+      "score": 0.11136121085370046
+    }
+  ]
+}

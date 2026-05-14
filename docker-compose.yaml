@@ -14,7 +14,10 @@ version: "3.8"
 # ============================================================
 
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.8.0-python3.10
+  build:
+    context: .
+    dockerfile: airflow/Dockerfile
+  image: customer-churn-airflow:2.8.0-python3.10
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
 
@@ -42,11 +45,12 @@ x-airflow-common: &airflow-common
     AWS_DEFAULT_REGION: us-east-1
 
     # For local/dev only. Better build a custom Airflow image in production.
-    _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-amazon==8.16.0"
+    _PIP_ADDITIONAL_REQUIREMENTS: "" 
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - airflow-logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
+    - ./:/opt/airflow/project
   networks:
     - ml-network
 

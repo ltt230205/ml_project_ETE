@@ -1,0 +1,18 @@
+{
+  "best_scenario": "after_preprocessing_feature_selection",
+  "best_model_name": "Random_Forest",
+  "best_run_id": "39c2bd44267b4b479e84297619cc7f76",
+  "best_model_uri": "runs:/39c2bd44267b4b479e84297619cc7f76/model_file",
+  "selected_threshold": 0.35,
+  "selection_metric": "test_f1_churned_threshold",
+  "cv_best_score": 0.8423081605885707,
+  "test_f1_churned_threshold": 0.8351314902225219,
+  "test_precision_churned_threshold": 0.814266929651545,
+  "test_recall_churned_threshold": 0.8570934256055364,
+  "test_accuracy_threshold": 0.9022,
+  "best_params": "{\"model__class_weight\": \"None\", \"model__max_depth\": \"20\", \"model__n_estimators\": \"200\", \"sampler\": \"passthrough\"}",
+  "thresholds_compared": [
+    0.5,
+    0.35
+  ]
+}

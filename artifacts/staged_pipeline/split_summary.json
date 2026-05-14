@@ -1,0 +1,11 @@
+{
+  "raw_path": "data/raw/ecommerce_customer_churn_dataset.csv",
+  "target": "Churned",
+  "id_cols_dropped": [],
+  "test_size": 0.2,
+  "random_state": 42,
+  "train_rows": 40000,
+  "test_rows": 10000,
+  "train_path": "data/staged_pipeline/interim/train_raw.csv",
+  "test_path": "data/staged_pipeline/interim/test_raw.csv"
+}

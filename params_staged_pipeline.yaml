@@ -1,0 +1,59 @@
+raw_data:
+  path: "data/raw/ecommerce_customer_churn_dataset.csv"
+
+preprocess:
+  target_column: "Churned"
+
+split:
+  test_size: 0.2
+  random_state: 42
+
+staged_pipeline:
+  base_dir: "data/staged_pipeline"
+  artifact_dir: "artifacts/staged_pipeline"
+
+  train_raw_path: "data/staged_pipeline/interim/train_raw.csv"
+  test_raw_path: "data/staged_pipeline/interim/test_raw.csv"
+  split_summary_path: "artifacts/staged_pipeline/split_summary.json"
+
+  train_clean_path: "data/staged_pipeline/processed/train_clean.csv"
+  test_clean_path: "data/staged_pipeline/processed/test_clean.csv"
+  cleaning_stats_path: "artifacts/staged_pipeline/cleaning_stats.json"
+
+  train_selected_path: "data/staged_pipeline/selected/train_selected.csv"
+  test_selected_path: "data/staged_pipeline/selected/test_selected.csv"
+  selected_features_path: "artifacts/staged_pipeline/selected_features.json"
+
+  compare_results_path: "artifacts/staged_pipeline/model_compare_results.csv"
+  threshold_compare_results_path: "artifacts/staged_pipeline/threshold_compare_results.csv"
+  best_summary_path: "artifacts/staged_pipeline/best_model_summary.json"
+  register_summary_path: "artifacts/staged_pipeline/register_summary.json"
+
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  s3_endpoint: "http://localhost:9000"
+  experiment_name: "Churned_Staged_Preprocess_FS_Grid"
+  registry_name: "churn_model_staged_best"
+
+threshold:
+  mode: "compare"
+  values: [0.5, 0.35]
+
+model_selection:
+  threshold: 0.35
+  metric: "test_f1_churned_threshold"
+
+feature_selection:
+  k: 20
+
+comparison:
+  scenarios:
+    - "before_preprocessing"
+    - "after_preprocessing"
+    - "after_preprocessing_feature_selection"
+
+grid_search:
+  scoring: "f1"
+  cv_folds: 5
+  n_jobs: -1
+  try_smote: true

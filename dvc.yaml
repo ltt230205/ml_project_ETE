@@ -59,31 +59,310 @@
 #     # Không cần outs cho model vì đã lưu trực tiếp lên MinIO qua MLflow
 
 
-stages:
-  preprocess:
-    cmd: ./venv/bin/python src/preprocess_v2.py
-    deps:
-      - src/preprocess_v2.py
-      - data/raw/ecommerce_customer_churn_dataset.csv
-    params:
-      - raw_data.path
-      - processed_data.train_path
-      - processed_data.test_path
-    outs:
-      - data/processed/train_v2.csv
-      - data/processed/test_v2.csv
+# stages:
+#   preprocess:
+#     cmd: python src/preprocess_v2.py
+#     deps:
+#       - src/preprocess_v2.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     params:
+#       - raw_data.path
+#       - processed_data.train_path
+#       - processed_data.test_path
+#     outs:
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
 
-  train:
-    cmd: ./venv/bin/python src/train_v2.py
+#   train:
+#     cmd: python src/train_v2.py
+#     deps:
+#       - src/train_v2.py
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+#     params:
+#       - processed_data.train_path
+#       - processed_data.test_path
+#       - preprocess.target_column
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - mlflow.experiment_name
+#     # Ở đây chúng ta không để 'outs' cho model vì bạn đã lưu trực tiếp lên MinIO qua MLflow
+
+# stages:
+#   preprocess:
+#     cmd: python src/preprocess_v2.py
+#     deps:
+#       - src/preprocess_v2.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     params:
+#       - raw_data.path
+#       - processed_data.train_path
+#       - processed_data.test_path
+#     outs:
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+
+#   train:
+#     cmd: python src/train_v2_threshold.py
+#     deps:
+#       - src/train_v2_threshold.py
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+#     params:
+#       - processed_data.train_path
+#       - processed_data.test_path
+#       - preprocess.target_column
+#       - preprocess.cv_folds 
+#       - preprocess.sampling_methods
+#       - mlflow.experiment_name
+#       - threshold.metric
+#       - threshold.min_precision
+
+
+    # stages:
+#   preprocess:
+#     cmd: python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     cmd: python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.target_column
+
+# stages:
+#   preprocess:
+#     cmd: ./venv/bin/python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     # Tương tự cho bước train
+#     cmd: ./venv/bin/python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - preprocess.target_column
+
+# stages:
+#   preprocess:
+#     # Trỏ thẳng vào venv để đảm bảo có pandas
+#     cmd: ./venv/bin/python src/preprocess.py
+#     deps:
+#       - src/preprocess.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     outs:
+#       - data/processed/cleaned_data.csv
+
+#   train_compare:
+#     # Chạy script huấn luyện so sánh 40 model (10 models x 2 scalers x 2 sampling)
+#     cmd: ./venv/bin/python src/train.py
+#     deps:
+#       - src/train.py
+#       - data/processed/cleaned_data.csv
+#     params:
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - preprocess.target_column
+#     # Không cần outs cho model vì đã lưu trực tiếp lên MinIO qua MLflow
+
+
+# stages:
+#   preprocess:
+#     cmd: python src/preprocess_v2.py
+#     deps:
+#       - src/preprocess_v2.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     params:
+#       - raw_data.path
+#       - processed_data.train_path
+#       - processed_data.test_path
+#     outs:
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+
+#   train:
+#     cmd: python src/train_v2.py
+#     deps:
+#       - src/train_v2.py
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+#     params:
+#       - processed_data.train_path
+#       - processed_data.test_path
+#       - preprocess.target_column
+#       - preprocess.cv_folds
+#       - preprocess.sampling_methods
+#       - mlflow.experiment_name
+#     # Ở đây chúng ta không để 'outs' cho model vì bạn đã lưu trực tiếp lên MinIO qua MLflow
+
+# stages:
+#   preprocess:
+#     cmd: python src/preprocess_v2.py
+#     deps:
+#       - src/preprocess_v2.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#     params:
+#       - raw_data.path
+#       - processed_data.train_path
+#       - processed_data.test_path
+#     outs:
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+
+#   threshold_pipeline:
+#     cmd: PARAMS_PATH=params_threshold.yaml python src/train_v2_threshold.py
+#     deps:
+#       - src/train_v2_threshold.py
+#       - data/processed/train_v2.csv
+#       - data/processed/test_v2.csv
+#       - params_threshold.yaml
+#     params:
+#       - params_threshold.yaml:
+#           - processed_data.train_path
+#           - processed_data.test_path
+#           - preprocess.target_column
+#           - preprocess.cv_folds
+#           - preprocess.sampling_methods
+#           - mlflow.experiment_name
+#           - mlflow.registry_name
+#           - threshold.mode
+#           - threshold.fixed_value
+#           - threshold.metric
+#           - threshold.min_precision
+#     outs:
+#       - artifacts/decision_threshold.json:
+#           cache: false
+
+stages:
+  split_data:
+    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/01_split_data.py
     deps:
-      - src/train_v2.py
-      - data/processed/train_v2.csv
-      - data/processed/test_v2.csv
+      - src/pipeline_stages/01_split_data.py
+      - data/raw/ecommerce_customer_churn_dataset.csv
+      - params_staged_pipeline.yaml
     params:
-      - processed_data.train_path
-      - processed_data.test_path
-      - preprocess.target_column
-      - preprocess.cv_folds
-      - preprocess.sampling_methods
-      - mlflow.experiment_name
-    # Ở đây chúng ta không để 'outs' cho model vì bạn đã lưu trực tiếp lên MinIO qua MLflow
+      - params_staged_pipeline.yaml:
+          - raw_data.path
+          - preprocess.target_column
+          - split.test_size
+          - split.random_state
+          - staged_pipeline.train_raw_path
+          - staged_pipeline.test_raw_path
+          - staged_pipeline.split_summary_path
+    outs:
+      - data/staged_pipeline/interim/train_raw.csv
+      - data/staged_pipeline/interim/test_raw.csv
+      - artifacts/staged_pipeline/split_summary.json:
+          cache: false
+
+  clean_data:
+    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/02_clean_data.py
+    deps:
+      - src/pipeline_stages/02_clean_data.py
+      - data/staged_pipeline/interim/train_raw.csv
+      - data/staged_pipeline/interim/test_raw.csv
+      - params_staged_pipeline.yaml
+    params:
+      - params_staged_pipeline.yaml:
+          - preprocess.target_column
+          - staged_pipeline.train_raw_path
+          - staged_pipeline.test_raw_path
+          - staged_pipeline.train_clean_path
+          - staged_pipeline.test_clean_path
+          - staged_pipeline.cleaning_stats_path
+    outs:
+      - data/staged_pipeline/processed/train_clean.csv
+      - data/staged_pipeline/processed/test_clean.csv
+      - artifacts/staged_pipeline/cleaning_stats.json:
+          cache: false
+
+  feature_selection:
+    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/03_feature_selection.py
+    deps:
+      - src/pipeline_stages/03_feature_selection.py
+      - data/staged_pipeline/processed/train_clean.csv
+      - data/staged_pipeline/processed/test_clean.csv
+      - params_staged_pipeline.yaml
+    params:
+      - params_staged_pipeline.yaml:
+          - preprocess.target_column
+          - feature_selection.k
+          - staged_pipeline.train_clean_path
+          - staged_pipeline.test_clean_path
+          - staged_pipeline.train_selected_path
+          - staged_pipeline.test_selected_path
+          - staged_pipeline.selected_features_path
+    outs:
+      - data/staged_pipeline/selected/train_selected.csv
+      - data/staged_pipeline/selected/test_selected.csv
+      - artifacts/staged_pipeline/selected_features.json:
+          cache: false
+
+  train_compare_grid:
+    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/04_train_compare_grid.py
+    deps:
+      - src/pipeline_stages/04_train_compare_grid.py
+      - data/staged_pipeline/interim/train_raw.csv
+      - data/staged_pipeline/interim/test_raw.csv
+      - data/staged_pipeline/processed/train_clean.csv
+      - data/staged_pipeline/processed/test_clean.csv
+      - data/staged_pipeline/selected/train_selected.csv
+      - data/staged_pipeline/selected/test_selected.csv
+      - params_staged_pipeline.yaml
+    params:
+      - params_staged_pipeline.yaml:
+          - preprocess.target_column
+          - threshold.mode
+          - threshold.values
+          - model_selection.threshold
+          - model_selection.metric
+          - comparison.scenarios
+          - grid_search.scoring
+          - grid_search.cv_folds
+          - grid_search.n_jobs
+          - grid_search.try_smote
+          - mlflow.experiment_name
+          - mlflow.registry_name
+          - staged_pipeline.compare_results_path
+          - staged_pipeline.threshold_compare_results_path
+          - staged_pipeline.best_summary_path
+    outs:
+      - artifacts/staged_pipeline/model_compare_results.csv:
+          cache: false
+      - artifacts/staged_pipeline/threshold_compare_results.csv:
+          cache: false
+      - artifacts/staged_pipeline/best_model_summary.json:
+          cache: false
+
+  register_best_model:
+    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/05_register_best_model.py
+    deps:
+      - src/pipeline_stages/05_register_best_model.py
+      - artifacts/staged_pipeline/best_model_summary.json
+      - params_staged_pipeline.yaml
+    params:
+      - params_staged_pipeline.yaml:
+          - mlflow.experiment_name
+          - mlflow.registry_name
+          - staged_pipeline.best_summary_path
+          - staged_pipeline.register_summary_path
+    outs:
+      - artifacts/staged_pipeline/register_summary.json:
+          cache: false
+
+
+      

@@ -5,7 +5,7 @@ import pandas as pd
 mlflow.set_tracking_uri("http://localhost:5000")
 
 # 2. Load model dưới dạng sklearn để dùng được hàm predict_proba
-model_uri = "models:/test/1"
+model_uri = "models:/XGB_MM_smote/1"
 try:
     model = mlflow.sklearn.load_model(model_uri)
     print(f"🚀 Đã tải mô hình từ: {model_uri}")

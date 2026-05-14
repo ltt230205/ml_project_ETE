@@ -1,0 +1,28 @@
+raw_data:
+  path: "data/raw/ecommerce_customer_churn_dataset.csv"
+
+processed_data:
+  train_path: "data/processed/train_v2.csv"
+  test_path: "data/processed/test_v2.csv"
+
+preprocess:
+  target_column: "Churned"
+  cv_folds: 5
+  sampling_methods: ["none", "smote"]
+
+mlflow:
+  # Nếu chạy trong Docker/Airflow, code hoặc env sẽ dùng service name này
+  tracking_uri: "http://mlflow:5000"
+  experiment_name: "Churned_Comparison_v4"
+
+  # MinIO trong Docker network
+  s3_endpoint: "http://minio:9000"
+
+  # Tên model mới có threshold cố định
+  registry_name: "churn_model_final_threshold"
+
+threshold:
+  mode: "fixed"
+  fixed_value: 0.35
+  metric: "fixed"
+  min_precision: null
