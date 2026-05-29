@@ -1,74 +1,5 @@
 schema: '2.0'
 stages:
-  preprocess:
-    cmd: python src/preprocess_v2.py
-    deps:
-    - path: data/raw/ecommerce_customer_churn_dataset.csv
-      hash: md5
-      md5: cf95c05dafbf6536d9f5f7739478af19
-      size: 6112281
-      isexec: true
-    - path: src/preprocess_v2.py
-      hash: md5
-      md5: b37085ce4a166eb152808d6d4c72e778
-      size: 2407
-    params:
-      params.yaml:
-        processed_data.test_path: data/processed/test_v2.csv
-        processed_data.train_path: data/processed/train_v2.csv
-        raw_data.path: data/raw/ecommerce_customer_churn_dataset.csv
-    outs:
-    - path: data/processed/test_v2.csv
-      hash: md5
-      md5: 4b3a170ec86e907fcb4aef2292df4963
-      size: 1240895
-    - path: data/processed/train_v2.csv
-      hash: md5
-      md5: f64c2fe80b3486ffd3da1b3056fcc662
-      size: 4965326
-  train_compare:
-    cmd: ./venv/bin/python src/train.py
-    deps:
-    - path: data/processed/cleaned_data.csv
-      hash: md5
-      md5: 06ec1f29221edef9824213077dedec8e
-      size: 5494047
-    - path: src/train.py
-      hash: md5
-      md5: c0ad648390bd62e45e99138f1ed27457
-      size: 4329
-    params:
-      params.yaml:
-        preprocess.cv_folds: 5
-        preprocess.sampling_methods:
-        - none
-        - smote
-        preprocess.target_column: Churned
-  train:
-    cmd: python src/train_v2.py
-    deps:
-    - path: data/processed/test_v2.csv
-      hash: md5
-      md5: 4b3a170ec86e907fcb4aef2292df4963
-      size: 1240895
-    - path: data/processed/train_v2.csv
-      hash: md5
-      md5: f64c2fe80b3486ffd3da1b3056fcc662
-      size: 4965326
-    - path: src/train_v2.py
-      hash: md5
-      md5: f499c1fc9654fc614d1681b0f880b1a5
-      size: 22683
-    params:
-      params.yaml:
-        mlflow.experiment_name: Churned_Comparison_v3
-        preprocess.cv_folds: 5
-        preprocess.sampling_methods:
-        - none
-        - smote
-        preprocess.target_column: Churned
-        processed_data.test_path: data/processed/test_v2.csv
-        processed_data.train_path: data/processed/train_v2.csv
   split_data:
     cmd: PARAMS_PATH=params_staged_pipeline.yaml python 
       src/pipeline_stages/01_split_data.py
@@ -80,8 +11,8 @@ stages:
       isexec: true
     - path: params_staged_pipeline.yaml
       hash: md5
-      md5: 1603ca1794f504455935a07eea727786
-      size: 1736
+      md5: 7538dfbc3c6a1b5d59ad4d09ac74306f
+      size: 3765
     - path: src/pipeline_stages/01_split_data.py
       hash: md5
       md5: 80c01b54c89c3ad14a19772d1989c6eb
@@ -124,8 +55,8 @@ stages:
       size: 4801151
     - path: params_staged_pipeline.yaml
       hash: md5
-      md5: 1603ca1794f504455935a07eea727786
-      size: 1736
+      md5: 7538dfbc3c6a1b5d59ad4d09ac74306f
+      size: 3765
     - path: src/pipeline_stages/02_clean_data.py
       hash: md5
       md5: d7c73bb899e95ee409d1dad61aad4809
@@ -169,8 +100,8 @@ stages:
       size: 4979694
     - path: params_staged_pipeline.yaml
       hash: md5
-      md5: 1603ca1794f504455935a07eea727786
-      size: 1736
+      md5: 7538dfbc3c6a1b5d59ad4d09ac74306f
+      size: 3765
     - path: src/pipeline_stages/03_feature_selection.py
       hash: md5
       md5: 18b8be3bd4a3bd0d676982fbedce9884
@@ -203,8 +134,8 @@ stages:
       md5: 879e3c13dc38161d56c50335038e9f36
       size: 4006258
   train_compare_grid:
-    cmd: PARAMS_PATH=params_staged_pipeline.yaml python 
-      src/pipeline_stages/04_train_compare_grid.py
+    cmd: "mkdir -p artifacts/staged_pipeline/grid_search_history && touch artifacts/staged_pipeline/grid_search_history/.gitkeep
+      && PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/04_train_compare_grid.py\n"
     deps:
     - path: data/staged_pipeline/interim/test_raw.csv
       hash: md5
@@ -232,8 +163,8 @@ stages:
       size: 4006258
     - path: params_staged_pipeline.yaml
       hash: md5
-      md5: 1603ca1794f504455935a07eea727786
-      size: 1736
+      md5: 7538dfbc3c6a1b5d59ad4d09ac74306f
+      size: 3765
     - path: src/pipeline_stages/04_train_compare_grid.py
       hash: md5
       md5: ecfe01764f5dd0764a011bb6fbdd7e80
@@ -245,20 +176,31 @@ stages:
         - after_preprocessing
         - after_preprocessing_feature_selection
         grid_search.cv_folds: 5
+        grid_search.early_stop_min_delta: 0.0001
+        grid_search.early_stop_patience: 10
+        grid_search.inner_n_jobs: 1
+        grid_search.max_evaluated_candidates: 20
+        grid_search.method: early_stop
+        grid_search.min_evaluated_candidates: 20
         grid_search.n_jobs: -1
+        grid_search.param_shuffle: true
+        grid_search.random_state: 42
         grid_search.scoring: f1
         grid_search.try_smote: true
-        mlflow.experiment_name: Churned_Staged_Preprocess_FS_Grid
+        grid_search.verbose: 0
+        mlflow.experiment_name: Churned_Staged_Preprocess_FS_Grid_v2
         mlflow.registry_name: churn_model_staged_best
         model_selection.metric: test_f1_churned_threshold
         model_selection.threshold: 0.35
         preprocess.target_column: Churned
+        staged_pipeline.artifact_dir: artifacts/staged_pipeline
         staged_pipeline.best_summary_path: 
           artifacts/staged_pipeline/best_model_summary.json
         staged_pipeline.compare_results_path: 
           artifacts/staged_pipeline/model_compare_results.csv
         staged_pipeline.threshold_compare_results_path: 
           artifacts/staged_pipeline/threshold_compare_results.csv
+        thread_pool.max_workers: 3
         threshold.mode: compare
         threshold.values:
         - 0.5
@@ -266,15 +208,20 @@ stages:
     outs:
     - path: artifacts/staged_pipeline/best_model_summary.json
       hash: md5
-      md5: f84a9353ddb4a1e7470a9e392052d804
+      md5: a59e51de8b26df7c248601b1aa1c848d
       size: 746
+    - path: artifacts/staged_pipeline/grid_search_history
+      hash: md5
+      md5: 6ffbaaad7b4ac6e1afabed19a80b2560.dir
+      size: 0
+      nfiles: 1
     - path: artifacts/staged_pipeline/model_compare_results.csv
       hash: md5
-      md5: a2862bd0ed2d4ecfb9cae98195e24ea9
+      md5: c916a0bbd4dc164715e62490dbef5b1d
       size: 7071
     - path: artifacts/staged_pipeline/threshold_compare_results.csv
       hash: md5
-      md5: 6fd3dc21b555f5a2c8c9682ff3e00905
+      md5: 04629873d128860ae189fa6f04290ccf
       size: 9708
   register_best_model:
     cmd: PARAMS_PATH=params_staged_pipeline.yaml python 
@@ -282,19 +229,19 @@ stages:
     deps:
     - path: artifacts/staged_pipeline/best_model_summary.json
       hash: md5
-      md5: f84a9353ddb4a1e7470a9e392052d804
+      md5: a59e51de8b26df7c248601b1aa1c848d
       size: 746
     - path: params_staged_pipeline.yaml
       hash: md5
-      md5: 1603ca1794f504455935a07eea727786
-      size: 1736
+      md5: 7538dfbc3c6a1b5d59ad4d09ac74306f
+      size: 3765
     - path: src/pipeline_stages/05_register_best_model.py
       hash: md5
       md5: 9f65390ec0621ed880a509d51542404f
       size: 5541
     params:
       params_staged_pipeline.yaml:
-        mlflow.experiment_name: Churned_Staged_Preprocess_FS_Grid
+        mlflow.experiment_name: Churned_Staged_Preprocess_FS_Grid_v2
         mlflow.registry_name: churn_model_staged_best
         staged_pipeline.best_summary_path: 
           artifacts/staged_pipeline/best_model_summary.json
@@ -303,5 +250,5 @@ stages:
     outs:
     - path: artifacts/staged_pipeline/register_summary.json
       hash: md5
-      md5: f95bb977deefff3fbff3d25f9946e7da
+      md5: 6c08add5fab559e43bf9a54bf38d9050
       size: 955

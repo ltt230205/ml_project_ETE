@@ -247,6 +247,123 @@
 #       - artifacts/decision_threshold.json:
 #           cache: false
 
+# stages:
+#   split_data:
+#     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/01_split_data.py
+#     deps:
+#       - src/pipeline_stages/01_split_data.py
+#       - data/raw/ecommerce_customer_churn_dataset.csv
+#       - params_staged_pipeline.yaml
+#     params:
+#       - params_staged_pipeline.yaml:
+#           - raw_data.path
+#           - preprocess.target_column
+#           - split.test_size
+#           - split.random_state
+#           - staged_pipeline.train_raw_path
+#           - staged_pipeline.test_raw_path
+#           - staged_pipeline.split_summary_path
+#     outs:
+#       - data/staged_pipeline/interim/train_raw.csv
+#       - data/staged_pipeline/interim/test_raw.csv
+#       - artifacts/staged_pipeline/split_summary.json:
+#           cache: false
+
+#   clean_data:
+#     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/02_clean_data.py
+#     deps:
+#       - src/pipeline_stages/02_clean_data.py
+#       - data/staged_pipeline/interim/train_raw.csv
+#       - data/staged_pipeline/interim/test_raw.csv
+#       - params_staged_pipeline.yaml
+#     params:
+#       - params_staged_pipeline.yaml:
+#           - preprocess.target_column
+#           - staged_pipeline.train_raw_path
+#           - staged_pipeline.test_raw_path
+#           - staged_pipeline.train_clean_path
+#           - staged_pipeline.test_clean_path
+#           - staged_pipeline.cleaning_stats_path
+#     outs:
+#       - data/staged_pipeline/processed/train_clean.csv
+#       - data/staged_pipeline/processed/test_clean.csv
+#       - artifacts/staged_pipeline/cleaning_stats.json:
+#           cache: false
+
+#   feature_selection:
+#     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/03_feature_selection.py
+#     deps:
+#       - src/pipeline_stages/03_feature_selection.py
+#       - data/staged_pipeline/processed/train_clean.csv
+#       - data/staged_pipeline/processed/test_clean.csv
+#       - params_staged_pipeline.yaml
+#     params:
+#       - params_staged_pipeline.yaml:
+#           - preprocess.target_column
+#           - feature_selection.k
+#           - staged_pipeline.train_clean_path
+#           - staged_pipeline.test_clean_path
+#           - staged_pipeline.train_selected_path
+#           - staged_pipeline.test_selected_path
+#           - staged_pipeline.selected_features_path
+#     outs:
+#       - data/staged_pipeline/selected/train_selected.csv
+#       - data/staged_pipeline/selected/test_selected.csv
+#       - artifacts/staged_pipeline/selected_features.json:
+#           cache: false
+
+#   train_compare_grid:
+#     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/04_train_compare_grid.py
+#     deps:
+#       - src/pipeline_stages/04_train_compare_grid.py
+#       - data/staged_pipeline/interim/train_raw.csv
+#       - data/staged_pipeline/interim/test_raw.csv
+#       - data/staged_pipeline/processed/train_clean.csv
+#       - data/staged_pipeline/processed/test_clean.csv
+#       - data/staged_pipeline/selected/train_selected.csv
+#       - data/staged_pipeline/selected/test_selected.csv
+#       - params_staged_pipeline.yaml
+#     params:
+#       - params_staged_pipeline.yaml:
+#           - preprocess.target_column
+#           - threshold.mode
+#           - threshold.values
+#           - model_selection.threshold
+#           - model_selection.metric
+#           - comparison.scenarios
+#           - grid_search.scoring
+#           - grid_search.cv_folds
+#           - grid_search.n_jobs
+#           - grid_search.try_smote
+#           - mlflow.experiment_name
+#           - mlflow.registry_name
+#           - staged_pipeline.compare_results_path
+#           - staged_pipeline.threshold_compare_results_path
+#           - staged_pipeline.best_summary_path
+#     outs:
+#       - artifacts/staged_pipeline/model_compare_results.csv:
+#           cache: false
+#       - artifacts/staged_pipeline/threshold_compare_results.csv:
+#           cache: false
+#       - artifacts/staged_pipeline/best_model_summary.json:
+#           cache: false
+
+#   register_best_model:
+#     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/05_register_best_model.py
+#     deps:
+#       - src/pipeline_stages/05_register_best_model.py
+#       - artifacts/staged_pipeline/best_model_summary.json
+#       - params_staged_pipeline.yaml
+#     params:
+#       - params_staged_pipeline.yaml:
+#           - mlflow.experiment_name
+#           - mlflow.registry_name
+#           - staged_pipeline.best_summary_path
+#           - staged_pipeline.register_summary_path
+#     outs:
+#       - artifacts/staged_pipeline/register_summary.json:
+#           cache: false
+
 stages:
   split_data:
     cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/01_split_data.py
@@ -313,7 +430,10 @@ stages:
           cache: false
 
   train_compare_grid:
-    cmd: PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/04_train_compare_grid.py
+    cmd: >
+      mkdir -p artifacts/staged_pipeline/grid_search_history &&
+      touch artifacts/staged_pipeline/grid_search_history/.gitkeep &&
+      PARAMS_PATH=params_staged_pipeline.yaml python src/pipeline_stages/04_train_compare_grid.py
     deps:
       - src/pipeline_stages/04_train_compare_grid.py
       - data/staged_pipeline/interim/train_raw.csv
@@ -331,21 +451,34 @@ stages:
           - model_selection.threshold
           - model_selection.metric
           - comparison.scenarios
+          - thread_pool.max_workers
           - grid_search.scoring
           - grid_search.cv_folds
           - grid_search.n_jobs
+          - grid_search.inner_n_jobs
+          - grid_search.verbose
           - grid_search.try_smote
+          - grid_search.random_state
+          - grid_search.param_shuffle
+          - grid_search.early_stop_min_delta
+          - grid_search.early_stop_patience
+          - grid_search.method
+          - grid_search.max_evaluated_candidates
+          - grid_search.min_evaluated_candidates
           - mlflow.experiment_name
           - mlflow.registry_name
           - staged_pipeline.compare_results_path
           - staged_pipeline.threshold_compare_results_path
           - staged_pipeline.best_summary_path
+          - staged_pipeline.artifact_dir
     outs:
       - artifacts/staged_pipeline/model_compare_results.csv:
           cache: false
       - artifacts/staged_pipeline/threshold_compare_results.csv:
           cache: false
       - artifacts/staged_pipeline/best_model_summary.json:
+          cache: false
+      - artifacts/staged_pipeline/grid_search_history:
           cache: false
 
   register_best_model:
@@ -363,6 +496,7 @@ stages:
     outs:
       - artifacts/staged_pipeline/register_summary.json:
           cache: false
+
 
 
       

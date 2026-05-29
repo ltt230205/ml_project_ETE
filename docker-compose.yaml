@@ -1,16 +1,12 @@
 version: "3.8"
 
 # ============================================================
-# Local MLOps stack:
-# - MinIO: object storage
-# - PostgreSQL: backend DB for MLflow and Airflow
-# - Redis: Celery broker for Airflow
-# - MLflow: experiment tracking + artifact serving
+# Customer Churn MLOps stack
+# - MinIO: S3-compatible storage for MLflow artifacts + Airflow logs
+# - PostgreSQL: backend DB for MLflow and Airflow metadata
+# - Redis: Celery broker
+# - MLflow: tracking server
 # - Airflow: orchestration with CeleryExecutor
-#
-# Run:
-#   mkdir -p airflow/dags airflow/plugins
-#   docker compose up -d
 # ============================================================
 
 x-airflow-common: &airflow-common
@@ -18,34 +14,41 @@ x-airflow-common: &airflow-common
     context: .
     dockerfile: airflow/Dockerfile
   image: customer-churn-airflow:2.8.0-python3.10
+  env_file:
+    - .env
   environment: &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR:-CeleryExecutor}
+    AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-false}
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: ${AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION:-true}
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
 
-    # Airflow DB
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflowpass@postgres:5432/airflow
-
-    # Celery
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflowpass@postgres:5432/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflowpass}@postgres:5432/${AIRFLOW_DB_NAME:-airflow}
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflowpass}@postgres:5432/${AIRFLOW_DB_NAME:-airflow}
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
 
-    # Security keys - local/dev values. Change them for real usage.
-    AIRFLOW__CORE__FERNET_KEY: "4fAMyXo5MD0b6TgOOfaYo56A4_PVqgQd7dpAsg3GdZs="
-    AIRFLOW__WEBSERVER__SECRET_KEY: "local-dev-airflow-secret-key-change-me"
+    AIRFLOW__CELERY__WORKER_CONCURRENCY: ${AIRFLOW__CELERY__WORKER_CONCURRENCY:-2}
+    AIRFLOW__CELERY__WORKER_PREFETCH_MULTIPLIER: ${AIRFLOW__CELERY__WORKER_PREFETCH_MULTIPLIER:-1}
+    AIRFLOW__SCHEDULER__TASK_QUEUED_TIMEOUT: ${AIRFLOW__SCHEDULER__TASK_QUEUED_TIMEOUT:-1800}
+    AIRFLOW__SCHEDULER__TASK_QUEUED_TIMEOUT_CHECK_INTERVAL: ${AIRFLOW__SCHEDULER__TASK_QUEUED_TIMEOUT_CHECK_INTERVAL:-60}
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: ${AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT:-120}
+    AIRFLOW__CORE__DAG_FILE_PROCESSOR_TIMEOUT: ${AIRFLOW__CORE__DAG_FILE_PROCESSOR_TIMEOUT:-180}
 
-    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__LOGGING__REMOTE_LOGGING: ${AIRFLOW__LOGGING__REMOTE_LOGGING:-true}
+    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: ${AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID:-minio_conn}
+    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: ${AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER:-s3://airflow-logs}
+    AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: ${AIRFLOW__LOGGING__DELETE_LOCAL_LOGS:-true}
 
-    # Remote logging to MinIO
-    AIRFLOW__LOGGING__REMOTE_LOGGING: "true"
-    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: minio_conn
-    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: s3://airflow-logs
+    MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI:-http://mlflow:5000}
+    MLFLOW_S3_ENDPOINT_URL: ${MLFLOW_S3_ENDPOINT_URL:-http://minio:9000}
+    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
+    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
+    AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+    DVC_NO_ANALYTICS: ${DVC_NO_ANALYTICS:-1}
+    PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
+    PYTHONPATH: ${PYTHONPATH:-/opt/airflow/project}
 
-    # Used by boto3/Airflow Amazon provider
-    AWS_ACCESS_KEY_ID: minioadmin
-    AWS_SECRET_ACCESS_KEY: minioadmin123
-    AWS_DEFAULT_REGION: us-east-1
-
-    # For local/dev only. Better build a custom Airflow image in production.
-    _PIP_ADDITIONAL_REQUIREMENTS: "" 
+    _PIP_ADDITIONAL_REQUIREMENTS: ""
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - airflow-logs:/opt/airflow/logs
@@ -55,18 +58,18 @@ x-airflow-common: &airflow-common
     - ml-network
 
 services:
-  # ==================== STORAGE ====================
-
   minio:
     image: minio/minio:latest
     container_name: minio
+    env_file:
+      - .env
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # MinIO Console
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio-data:/data
     networks:
@@ -81,44 +84,48 @@ services:
   minio-init:
     image: minio/mc:latest
     container_name: minio-init
+    env_file:
+      - .env
     depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      echo 'Waiting for MinIO...';
-      until /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123; do
-        echo 'MinIO is not ready yet...';
-        sleep 3;
-      done;
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        echo "Waiting for MinIO..."
+        until /usr/bin/mc alias set myminio http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"; do
+          echo "MinIO is not ready yet..."
+          sleep 3
+        done
 
-      /usr/bin/mc mb myminio/mlflow-artifacts --ignore-existing;
-      /usr/bin/mc mb myminio/dvc-remote --ignore-existing;
-      /usr/bin/mc mb myminio/airflow-logs --ignore-existing;
+        /usr/bin/mc mb "myminio/$${MLFLOW_ARTIFACT_BUCKET}" --ignore-existing
+        /usr/bin/mc mb "myminio/$${DVC_REMOTE_BUCKET}" --ignore-existing
+        /usr/bin/mc mb "myminio/$${AIRFLOW_LOG_BUCKET}" --ignore-existing
 
-      echo 'MinIO buckets are ready.';
-      exit 0;
-      "
+        echo "MinIO buckets are ready."
     networks:
       - ml-network
     restart: "no"
 
-  # ==================== DATABASE ====================
-
   postgres:
     image: postgres:15-alpine
     container_name: ml-postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: mlflow
-      POSTGRES_PASSWORD: mlflowpass
-      POSTGRES_DB: mlflow
+      POSTGRES_USER: ${MLFLOW_POSTGRES_USER:-mlflow}
+      POSTGRES_PASSWORD: ${MLFLOW_POSTGRES_PASSWORD:-mlflowpass}
+      POSTGRES_DB: ${MLFLOW_POSTGRES_DB:-mlflow}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - ml-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow"]
+      test: ["CMD-SHELL", "pg_isready -U ${MLFLOW_POSTGRES_USER:-mlflow} -d ${MLFLOW_POSTGRES_DB:-mlflow}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -127,50 +134,37 @@ services:
   postgres-init:
     image: postgres:15-alpine
     container_name: postgres-init
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      PGPASSWORD: mlflowpass
+      PGPASSWORD: ${MLFLOW_POSTGRES_PASSWORD:-mlflowpass}
     entrypoint: /bin/sh
     command:
       - -c
       - |
         set -e
+        echo "Checking Airflow role and DB..."
 
-        echo "Checking Airflow role..."
-
-        ROLE_EXISTS=$$(psql -h postgres -U mlflow -d mlflow -tAc "SELECT 1 FROM pg_roles WHERE rolname='airflow';")
-
+        ROLE_EXISTS=$$(psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${MLFLOW_POSTGRES_DB}" -tAc "SELECT 1 FROM pg_roles WHERE rolname='$${AIRFLOW_DB_USER}';")
         if [ "$$ROLE_EXISTS" != "1" ]; then
-          echo "Creating role airflow..."
-          psql -h postgres -U mlflow -d mlflow -c "CREATE ROLE airflow LOGIN PASSWORD 'airflowpass';"
-        else
-          echo "Role airflow already exists."
+          psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${MLFLOW_POSTGRES_DB}" -c "CREATE ROLE $${AIRFLOW_DB_USER} LOGIN PASSWORD '$${AIRFLOW_DB_PASSWORD}';"
         fi
 
-        echo "Checking Airflow database..."
-
-        DB_EXISTS=$$(psql -h postgres -U mlflow -d mlflow -tAc "SELECT 1 FROM pg_database WHERE datname='airflow';")
-
+        DB_EXISTS=$$(psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${MLFLOW_POSTGRES_DB}" -tAc "SELECT 1 FROM pg_database WHERE datname='$${AIRFLOW_DB_NAME}';")
         if [ "$$DB_EXISTS" != "1" ]; then
-          echo "Creating database airflow..."
-          createdb -h postgres -U mlflow -O airflow airflow
-        else
-          echo "Database airflow already exists."
+          createdb -h postgres -U "$${MLFLOW_POSTGRES_USER}" -O "$${AIRFLOW_DB_USER}" "$${AIRFLOW_DB_NAME}"
         fi
 
-        echo "Granting privileges..."
-        psql -h postgres -U mlflow -d airflow -c "GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;"
-        psql -h postgres -U mlflow -d airflow -c "GRANT ALL ON SCHEMA public TO airflow;"
-        psql -h postgres -U mlflow -d airflow -c "ALTER SCHEMA public OWNER TO airflow;"
-
+        psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${AIRFLOW_DB_NAME}" -c "GRANT ALL PRIVILEGES ON DATABASE $${AIRFLOW_DB_NAME} TO $${AIRFLOW_DB_USER};"
+        psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${AIRFLOW_DB_NAME}" -c "GRANT ALL ON SCHEMA public TO $${AIRFLOW_DB_USER};"
+        psql -h postgres -U "$${MLFLOW_POSTGRES_USER}" -d "$${AIRFLOW_DB_NAME}" -c "ALTER SCHEMA public OWNER TO $${AIRFLOW_DB_USER};"
         echo "PostgreSQL init is done."
     networks:
       - ml-network
     restart: "no"
-
-  # ==================== REDIS ====================
 
   redis:
     image: redis:7-alpine
@@ -187,11 +181,11 @@ services:
       retries: 10
     restart: unless-stopped
 
-  # ==================== MLFLOW ====================
-
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.12.2
     container_name: mlflow-server
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -204,27 +198,23 @@ services:
       - -c
       - |
         set -e
-
         pip install --no-cache-dir psycopg2-binary boto3
-
         mlflow server \
           --host 0.0.0.0 \
           --port 5000 \
-          --backend-store-uri postgresql+psycopg2://mlflow:mlflowpass@postgres:5432/mlflow \
-          --artifacts-destination s3://mlflow-artifacts/ \
+          --backend-store-uri "postgresql+psycopg2://$${MLFLOW_POSTGRES_USER}:$${MLFLOW_POSTGRES_PASSWORD}@postgres:5432/$${MLFLOW_POSTGRES_DB}" \
+          --artifacts-destination "s3://$${MLFLOW_ARTIFACT_BUCKET}/" \
           --serve-artifacts
     environment:
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin123
-      AWS_DEFAULT_REGION: us-east-1
+      MLFLOW_S3_ENDPOINT_URL: ${MLFLOW_S3_ENDPOINT_URL:-http://minio:9000}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
     ports:
-      - "5000:5000"
+      - "${MLFLOW_PORT:-5000}:5000"
     networks:
       - ml-network
     restart: unless-stopped
-
-  # ==================== AIRFLOW ====================
 
   airflow-init:
     <<: *airflow-common
@@ -241,24 +231,19 @@ services:
       - -c
       - |
         set -e
-
-        echo "Migrating Airflow metadata DB..."
         airflow db migrate
-
-        echo "Creating Airflow admin user if needed..."
         airflow users create \
-          --username airflow \
-          --password airflow123 \
+          --username "$${_AIRFLOW_WWW_USER_USERNAME}" \
+          --password "$${_AIRFLOW_WWW_USER_PASSWORD}" \
           --firstname Admin \
           --lastname User \
           --role Admin \
-          --email admin@airflow.local || true
+          --email "$${_AIRFLOW_WWW_USER_EMAIL}" || true
 
-        echo "Creating MinIO connection for Airflow remote logs..."
-        airflow connections delete 'minio_conn' || true
-        airflow connections add 'minio_conn' \
-          --conn-type 'aws' \
-          --conn-extra '{"aws_access_key_id": "minioadmin", "aws_secret_access_key": "minioadmin123", "endpoint_url": "http://minio:9000", "region_name": "us-east-1"}'
+        airflow connections delete "$${AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID}" || true
+        airflow connections add "$${AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID}" \
+          --conn-type aws \
+          --conn-extra "{\"aws_access_key_id\": \"$${AWS_ACCESS_KEY_ID}\", \"aws_secret_access_key\": \"$${AWS_SECRET_ACCESS_KEY}\", \"endpoint_url\": \"http://minio:9000\", \"region_name\": \"$${AWS_DEFAULT_REGION}\"}"
 
         echo "Airflow init is done."
     restart: "no"
@@ -271,9 +256,9 @@ services:
         condition: service_completed_successfully
     command: webserver
     ports:
-      - "8080:8080"
+      - "${AIRFLOW_WEBSERVER_PORT:-8080}:8080"
     healthcheck:
-      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname \"$${HOSTNAME}\" || curl -f http://localhost:8080/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10

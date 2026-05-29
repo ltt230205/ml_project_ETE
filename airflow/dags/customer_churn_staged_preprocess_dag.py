@@ -59,7 +59,7 @@ echo "========================================"
 
 
 with DAG(
-    dag_id="customer_churn_staged_preprocess_pipeline",
+    dag_id="_customer_churn_staged_preprocess_pipeline",
     description="Staged preprocessing + feature selection + grid search pipeline",
     start_date=pendulum.datetime(2026, 1, 1, tz="Asia/Ho_Chi_Minh"),
     schedule=None,
